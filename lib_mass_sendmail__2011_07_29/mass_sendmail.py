@@ -44,19 +44,50 @@ def new_to_addr_iter(path, use_shuffle=None):
         for to_addr in to_addr_list:
             yield to_addr
 
-def i_string(s):
+def i_string_word(s):
     try:
         b = s.encode('ascii')
     except UnicodeEncodeError:
         from base64 import b64encode
         
-        b = b64encode(s.encode('utf-8', 'replace'))
+        b = b64encode(s.encode('UTF-8', 'replace'))
         
         i = '=?utf-8?B?{}?='.format(b.decode('ascii'))
     else:
         i = s
     
     return i
+
+def i_string(s):
+    i = ' '.join(i_string_word(word) for word in s.split(' '))
+    
+    return i
+
+def base64_data(b):
+    if isinstance(b, bytes):
+        pass
+    elif isinstance(b, str):
+        b = b.encode('utf-8', 'replace')
+    else:
+        b = str(b).encode('utf-8', 'replace')
+    
+    from base64 import b64encode
+    from textwrap import wrap
+    
+    result = wrap(b64encode(b).decode('ascii'))
+    
+    return result
+
+def new_boundary():
+    from random import choice
+    
+    r = ''.join(
+        choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/')
+        for x in range(20)
+    )
+    boundary = '=-{}'.format(r)
+    
+    return boundary
 
 def new_mbox(
             to_addr,
@@ -65,17 +96,47 @@ def new_mbox(
             from_addr=None,
             attachments=None,
         ):
-    assert to_addr is not None
-    assert subject is not None
-    assert text is not None
+    mbox_list = []
+    boundary = new_boundary()
     
-    mbox = repr(dict(
-        to_addr=to_addr,
-        subject=subject,
-        text=text,
-        from_addr=from_addr,
-        attachments=attachments,
-    ))
+    if subject is not None:
+        mbox_list.append('Subject: {}'.format(i_string(subject)))
+    if from_addr is not None:
+        mbox_list.append('From: {}'.format(i_string(from_addr)))
+    if to_addr is not None:
+        mbox_list.append('To: {}'.format(i_string(to_addr)))
+    mbox_list.append('Content-Type: multipart/mixed; boundary="{}"'.format(boundary))
+    mbox_list.append('')
+    
+    if text is not None:
+        text_b64 = base64_data(text)
+        
+        mbox_list.append('--{}'.format(boundary))
+        mbox_list.append('Content-Type: text/plain; charset="UTF-8"')
+        mbox_list.append('Content-Transfer-Encoding: base64')
+        mbox_list.append('')
+        mbox_list.extend(text_b64)
+    
+    if attachments:
+        from os.path import basename
+        
+        for att_path in attachments:
+            att_name = basename(att_path)
+            with open(att_path, 'rb') as fd:
+                att_data = fd.read()
+            att_b64 =base64_data(att_data)
+            
+            mbox_list.append('--{}'.format(boundary))
+            mbox_list.append('Content-Type: application/octet-stream; name="{}"'.format(i_string(att_name)))
+            mbox_list.append('Content-Disposition: attachment; filename="{}"'.format(i_string(att_name)))
+            mbox_list.append('Content-Transfer-Encoding: base64')
+            mbox_list.append('')
+            mbox_list.extend(att_b64)
+    
+    mbox_list.append('--{}'.format(boundary))
+    mbox_list.append('.')
+    
+    mbox = '\n'.join(mbox_list)
     
     return mbox
 
@@ -88,10 +149,6 @@ def sendmail(
             attachments=None,
             new_mbox=new_mbox,
         ):
-    assert to_addr is not None
-    assert subject is not None
-    assert text is not None
-    
     mbox = new_mbox(
         to_addr,
         subject,
@@ -111,10 +168,6 @@ def mass_sendmail(
             from_addr=None,
             attachments=None,
         ):
-    assert to_addr_list_file is not None
-    assert subject is not None
-    assert text is not None
-    
     if attachments is None:
         attachments = ()
     
