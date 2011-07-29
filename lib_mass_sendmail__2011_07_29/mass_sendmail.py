@@ -48,7 +48,6 @@ def new_mbox(
             to_addr,
             subject,
             text,
-            real_from_addr=None,
             from_addr=None,
             attachments=None,
         ):
@@ -60,7 +59,6 @@ def new_mbox(
         to_addr=to_addr,
         subject=subject,
         text=text,
-        real_from_addr=real_from_addr,
         from_addr=from_addr,
         attachments=attachments,
     ))
@@ -84,7 +82,6 @@ def sendmail(
         to_addr,
         subject,
         text,
-        real_from_addr=real_from_addr,
         from_addr=from_addr,
         attachments=attachments,
     )
