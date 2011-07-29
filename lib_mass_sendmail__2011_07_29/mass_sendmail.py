@@ -44,7 +44,7 @@ def new_to_addr_iter(path, use_shuffle=None):
         for to_addr in to_addr_list:
             yield to_addr
 
-def i_string_word(s):
+def i_string(s):
     try:
         b = s.encode('ascii')
     except UnicodeEncodeError:
@@ -55,11 +55,6 @@ def i_string_word(s):
         i = '=?utf-8?B?{}?='.format(b.decode('ascii'))
     else:
         i = s
-    
-    return i
-
-def i_string(s):
-    i = ' '.join(i_string_word(word) for word in s.split(' '))
     
     return i
 
@@ -93,7 +88,9 @@ def new_mbox(
             to_addr,
             subject,
             text,
+            from_name=None,
             from_addr=None,
+            to_name=None,
             attachments=None,
         ):
     mbox_list = []
@@ -102,9 +99,15 @@ def new_mbox(
     if subject is not None:
         mbox_list.append('Subject: {}'.format(i_string(subject)))
     if from_addr is not None:
-        mbox_list.append('From: {}'.format(i_string(from_addr)))
+        if from_name is not None:
+            mbox_list.append('From: {} <{}>'.format(i_string(from_name), from_addr))
+        else:
+            mbox_list.append('From: {}'.format(from_addr))
     if to_addr is not None:
-        mbox_list.append('To: {}'.format(i_string(to_addr)))
+        if to_name is not None:
+            mbox_list.append('To: {} <{}>'.format(i_string(to_name), to_addr))
+        else:
+            mbox_list.append('To: {}'.format(to_addr))
     mbox_list.append('Content-Type: multipart/mixed; boundary="{}"'.format(boundary))
     mbox_list.append('')
     
@@ -145,7 +148,9 @@ def sendmail(
             subject,
             text,
             real_from_addr=None,
+            from_name=None,
             from_addr=None,
+            to_name=None,
             attachments=None,
             new_mbox=new_mbox,
         ):
@@ -157,7 +162,9 @@ def sendmail(
         to_addr,
         subject,
         text,
+        from_name=from_name,
         from_addr=from_addr,
+        to_name=to_name,
         attachments=attachments,
     )
     mbox_b = mbox.encode('utf-8', 'replace')
@@ -181,6 +188,7 @@ def mass_sendmail(
             text,
             use_to_addr_list_shuffle=None,
             real_from_addr=None,
+            from_name=None,
             from_addr=None,
             attachments=None,
         ):
@@ -193,6 +201,7 @@ def mass_sendmail(
             subject,
             text,
             real_from_addr=real_from_addr,
+            from_name=from_name,
             from_addr=from_addr,
             attachments=attachments,
         )

@@ -43,6 +43,8 @@ def main():
                         DEFAULTSECT, 'use-to-addr-list-shuffle', fallback=None),
                 real_from_addr=config.get(
                         DEFAULTSECT, 'real-from-addr', fallback=None),
+                from_name=config.get(
+                        DEFAULTSECT, 'from-name', fallback=None),
                 from_addr=config.get(
                         DEFAULTSECT, 'from-addr', fallback=None),
                 attachments=tuple(map(
