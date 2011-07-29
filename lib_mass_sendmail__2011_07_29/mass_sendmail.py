@@ -44,6 +44,20 @@ def new_to_addr_iter(path, use_shuffle=None):
         for to_addr in to_addr_list:
             yield to_addr
 
+def i_string(s):
+    try:
+        b = s.encode('ascii')
+    except UnicodeEncodeError:
+        from base64 import b64encode
+        
+        b = b64encode(s.encode('utf-8', 'replace'))
+        
+        i = '=?utf-8?B?{}?='.format(b.decode('ascii'))
+    else:
+        i = s
+    
+    return i
+
 def new_mbox(
             to_addr,
             subject,
