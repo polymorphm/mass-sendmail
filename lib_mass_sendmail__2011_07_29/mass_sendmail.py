@@ -149,6 +149,10 @@ def sendmail(
             attachments=None,
             new_mbox=new_mbox,
         ):
+    assert to_addr is not None
+    
+    from subprocess import Popen, PIPE
+    
     mbox = new_mbox(
         to_addr,
         subject,
@@ -156,8 +160,20 @@ def sendmail(
         from_addr=from_addr,
         attachments=attachments,
     )
+    mbox_b = mbox.encode('utf-8', 'replace')
     
-    print('sendmail(): mbox: == {}\n-------------------'.format(mbox)) # DEBUG TEST
+    args = ['sendmail']
+    if real_from_addr is not None:
+        args.extend(('-f', real_from_addr))
+    args.append(to_addr)
+    
+    with Popen(args, stdin=PIPE) as proc:
+        proc.stdin.write(mbox_b)
+        proc.stdin.close()
+        ret = proc.wait()
+    
+    if ret != 0:
+        raise SendmailError('sandmail-proc result is not zero')
 
 def mass_sendmail(
             to_addr_list_file,
