@@ -108,6 +108,8 @@ def new_mbox(
             mbox_list.append('To: {} <{}>'.format(i_string(to_name), to_addr))
         else:
             mbox_list.append('To: {}'.format(to_addr))
+    if attachments is None:
+        attachments = ()
     mbox_list.append('Content-Type: multipart/mixed; boundary="{}"'.format(boundary))
     mbox_list.append('')
     
@@ -192,9 +194,6 @@ def mass_sendmail(
             from_addr=None,
             attachments=None,
         ):
-    if attachments is None:
-        attachments = ()
-    
     for to_addr in new_to_addr_iter(to_addr_list_file, use_shuffle=use_to_addr_list_shuffle):
         sendmail(
             to_addr,
