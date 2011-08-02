@@ -95,7 +95,13 @@ def new_mbox(
             from_addr=None,
             to_name=None,
             attachments=None,
+            attachments_cache=None,
         ):
+    if attachments is None:
+        attachments = ()
+    if attachments_cache is None:
+        attachments_cache = {}
+    
     mbox_list = []
     boundary = new_boundary()
     
@@ -111,8 +117,6 @@ def new_mbox(
             mbox_list.append('To: {} <{}>'.format(i_string(to_name), to_addr))
         else:
             mbox_list.append('To: {}'.format(to_addr))
-    if attachments is None:
-        attachments = ()
     mbox_list.append('Content-Type: multipart/mixed; boundary="{}"'.format(boundary))
     mbox_list.append('')
     
@@ -126,13 +130,20 @@ def new_mbox(
         mbox_list.extend(text_b64)
     
     if attachments:
-        from os.path import basename
+        from os.path import abspath, basename
         
         for att_path in attachments:
             att_name = basename(att_path)
-            with open(att_path, 'rb') as fd:
-                att_data = fd.read()
-            att_b64 = base64_data(att_data)
+            att_abs_path = abspath(att_path)
+            
+            if att_abs_path in attachments_cache:
+                att_b64 = attachments_cache[att_abs_path]
+            else:
+                with open(att_path, 'rb') as fd:
+                    att_data = fd.read()
+                
+                att_b64 = base64_data(att_data)
+                attachments_cache[att_abs_path] = att_b64
             
             mbox_list.append('--{}'.format(boundary))
             mbox_list.append('Content-Type: application/octet-stream; name="{}"'.format(i_string(att_name)))
@@ -157,6 +168,7 @@ def sendmail(
             from_addr=None,
             to_name=None,
             attachments=None,
+            attachments_cache=None,
             new_mbox=new_mbox,
         ):
     assert to_addr is not None
@@ -171,6 +183,7 @@ def sendmail(
         from_addr=from_addr,
         to_name=to_name,
         attachments=attachments,
+        attachments_cache=attachments_cache,
     )
     mbox_b = mbox.encode('utf-8', 'replace')
     
@@ -199,6 +212,8 @@ def mass_sendmail(
         ):
     from .safe_print import safe_print as print
     
+    attachments_cache = {}
+    
     for to_addr in new_to_addr_iter(to_addr_list_file, use_shuffle=use_to_addr_list_shuffle):
         print('{}...'.format(to_addr), end=' ')
         try:
@@ -210,6 +225,7 @@ def mass_sendmail(
                 from_name=from_name,
                 from_addr=from_addr,
                 attachments=attachments,
+                attachments_cache=attachments_cache,
             )
         except KeyboardInterrupt:
             print('KeyboardInterrupt!')
