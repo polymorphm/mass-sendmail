@@ -132,7 +132,7 @@ def new_mbox(
             att_name = basename(att_path)
             with open(att_path, 'rb') as fd:
                 att_data = fd.read()
-            att_b64 =base64_data(att_data)
+            att_b64 = base64_data(att_data)
             
             mbox_list.append('--{}'.format(boundary))
             mbox_list.append('Content-Type: application/octet-stream; name="{}"'.format(i_string(att_name)))
