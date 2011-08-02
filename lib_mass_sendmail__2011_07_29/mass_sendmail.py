@@ -21,6 +21,9 @@ from .main import (
     UserError,
 )
 
+class SendmailError(Exception):
+    pass
+
 def new_to_addr_iter(path, use_shuffle=None):
     if use_shuffle is None:
         use_shuffle = True
