@@ -212,7 +212,7 @@ def mass_sendmail(
                 attachments=attachments,
             )
         except:
-            from traceback import print_exc()
+            from traceback import print_exc
             
             print('ERROR!')
             print_exc()
