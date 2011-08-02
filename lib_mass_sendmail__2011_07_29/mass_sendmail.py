@@ -197,13 +197,24 @@ def mass_sendmail(
             from_addr=None,
             attachments=None,
         ):
+    from .safe_print import safe_print as print
+    
     for to_addr in new_to_addr_iter(to_addr_list_file, use_shuffle=use_to_addr_list_shuffle):
-        sendmail(
-            to_addr,
-            subject,
-            text,
-            real_from_addr=real_from_addr,
-            from_name=from_name,
-            from_addr=from_addr,
-            attachments=attachments,
-        )
+        print('{}...'.format(to_addr), end=' ')
+        try:
+            sendmail(
+                to_addr,
+                subject,
+                text,
+                real_from_addr=real_from_addr,
+                from_name=from_name,
+                from_addr=from_addr,
+                attachments=attachments,
+            )
+        except:
+            from traceback import print_exc()
+            
+            print('ERROR!')
+            print_exc()
+        else:
+            print('PASS!')
