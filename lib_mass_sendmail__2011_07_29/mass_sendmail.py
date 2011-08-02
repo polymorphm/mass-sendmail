@@ -211,6 +211,9 @@ def mass_sendmail(
                 from_addr=from_addr,
                 attachments=attachments,
             )
+        except KeyboardInterrupt:
+            print('KeyboardInterrupt!')
+            break
         except:
             from traceback import print_exc
             
