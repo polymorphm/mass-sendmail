@@ -1,7 +1,7 @@
 mass-sendmail
 =============
 
-It is program for massive sendmail
+Utility for massive sendmail
 
 Status
 ------
