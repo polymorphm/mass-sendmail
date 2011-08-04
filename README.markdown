@@ -6,4 +6,4 @@ Utility for massive sendmail
 Status
 ------
 
-Current status of project -- is *beta*
+Current status of project -- is *beta* (all works, but not so well tested)
