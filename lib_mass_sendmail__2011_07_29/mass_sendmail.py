@@ -159,7 +159,7 @@ def new_mbox(
             mbox_list.append('')
             mbox_list.extend(att_b64)
     
-    mbox_list.append('--{}'.format(boundary))
+    mbox_list.append('--{}--'.format(boundary))
     mbox_list.append('.')
     
     mbox = '\n'.join(mbox_list)
