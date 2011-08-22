@@ -27,12 +27,14 @@ def safe_print(*args, sep=None, end=None, file=None):
         file = sys_stdout
     
     def safe_conv(value):
+        encoding = getattr(file, 'encoding', None) or 'utf-8'
+        
         if isinstance(value, bytes):
             safe_value = value
         elif isinstance(value, str):
-            safe_value = value.encode(file.encoding, 'replace')
+            safe_value = value.encode(encoding, 'replace')
         else:
-            safe_value = str(value).encode(file.encoding, 'replace')
+            safe_value = str(value).encode(encoding, 'replace')
         
         return safe_value
     
