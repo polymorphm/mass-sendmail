@@ -17,41 +17,47 @@
 
 assert str is not bytes
 
+import argparse
+
 class UserError(Exception):
     pass
 
 def main():
-    from sys import argv
+    parser = argparse.ArgumentParser(
+            description='Utility for massive sendmail')
     
-    if len(argv) >= 2:
-        from os.path import join, dirname
-        from .mass_sendmail import mass_sendmail
+    parser.add_argument(
+            'cfg', nargs='+',
+            help='Path to config file')
+    
+    args = parser.parse_args()
+    
+    from os.path import join, dirname
+    from .mass_sendmail import mass_sendmail
+    
+    for cfg in args.cfg:
+        from configparser import ConfigParser
+        from configparser import DEFAULTSECT
         
-        for arg in argv[1:]:
-            from configparser import ConfigParser
-            from configparser import DEFAULTSECT
-            
-            config = ConfigParser()
-            config.read(arg, encoding='utf-8')
-            
-            mass_sendmail(
-                join(dirname(arg), config.get(
-                        DEFAULTSECT, 'to-addr-list-file', fallback='to-addr-list.txt')),
-                config.get(DEFAULTSECT, 'subject'),
-                config.get(DEFAULTSECT, 'text'),
-                use_to_addr_list_shuffle=config.getboolean(
-                        DEFAULTSECT, 'use-to-addr-list-shuffle', fallback=None),
-                real_from_addr=config.get(
-                        DEFAULTSECT, 'real-from-addr', fallback=None),
-                from_name=config.get(
-                        DEFAULTSECT, 'from-name', fallback=None),
-                from_addr=config.get(
-                        DEFAULTSECT, 'from-addr', fallback=None),
-                attachments=tuple(map(
-                    lambda path: join(dirname(arg), path),
-                    filter(None, map(lambda x: x.strip(),
-                            config.get(DEFAULTSECT, 'attachments', fallback='').split(':')))
-                )),
-            )
-    else:
-        raise UserError('missing arguments')
+        config = ConfigParser()
+        config.read(cfg, encoding='utf-8')
+        
+        mass_sendmail(
+            join(dirname(cfg), config.get(
+                    DEFAULTSECT, 'to-addr-list-file', fallback='to-addr-list.txt')),
+            config.get(DEFAULTSECT, 'subject'),
+            config.get(DEFAULTSECT, 'text'),
+            use_to_addr_list_shuffle=config.getboolean(
+                    DEFAULTSECT, 'use-to-addr-list-shuffle', fallback=None),
+            real_from_addr=config.get(
+                    DEFAULTSECT, 'real-from-addr', fallback=None),
+            from_name=config.get(
+                    DEFAULTSECT, 'from-name', fallback=None),
+            from_addr=config.get(
+                    DEFAULTSECT, 'from-addr', fallback=None),
+            attachments=tuple(map(
+                lambda path: join(dirname(cfg), path),
+                filter(None, map(lambda x: x.strip(),
+                        config.get(DEFAULTSECT, 'attachments', fallback='').split(':')))
+            )),
+        )
