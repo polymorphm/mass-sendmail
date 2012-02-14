@@ -1,6 +1,6 @@
 # -*- mode: python; coding: utf-8 -*-
 #
-# Copyright 2011 Andrej A Antonov <polymorphm@qmail.com>
+# Copyright 2011, 2012 Andrej A Antonov <polymorphm@qmail.com>.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -221,8 +221,10 @@ def mass_sendmail(
     
     attachments_cache = {}
     
-    for to_addr in new_to_addr_iter(to_addr_list_file, use_shuffle=use_to_addr_list_shuffle):
-        print('{}...'.format(to_addr), end=' ')
+    for i, to_addr in enumerate(new_to_addr_iter(
+            to_addr_list_file,
+            use_shuffle=use_to_addr_list_shuffle)):
+        print('[{}] {}...'.format(i, to_addr), end=' ')
         try:
             sendmail(
                 to_addr,
