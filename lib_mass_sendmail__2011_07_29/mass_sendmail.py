@@ -216,6 +216,7 @@ def mass_sendmail(
             from_name=None,
             from_addr=None,
             attachments=None,
+            force_delay=None,
         ):
     from .safe_print import safe_print as print
     
@@ -246,3 +247,10 @@ def mass_sendmail(
             print_exc()
         else:
             print('PASS!')
+        
+        if force_delay is not None:
+            from time import sleep
+            
+            print('delaying {} sec...'.format(force_delay), end=' ')
+            sleep(force_delay)
+            print('DONE')
